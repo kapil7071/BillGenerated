@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Create Bill</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+        }
+        /* New heading style */
+        h1.page-heading {
+            font-size: 2.5rem;
+            font-weight: 900;
+            text-align: center;
+            color: #2980b9;
+            margin-bottom: 30px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 6px;
+            text-align: left;
+        }
+        th {
+            background-color: #f7f7f7;
+        }
+        input[type=text], input[type=number], select {
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 8px 12px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        .add-btn {
+            background-color: #2980b9;
+            color: white;
+            border: none;
+        }
+        .remove-btn {
+            background-color: #c0392b;
+            color: white;
+            border: none;
+        }
+        /* Flex for weight + unit */
+        .weight-container {
+            display: flex;
+            gap: 6px;
+        }
+        .weight-container input {
+            flex: 1;
+        }
+        .weight-container select {
+            width: 80px;
+        }
+    </style>
+</head>
+<body>
+
+<h1 class="page-heading">BakeBliss_with_Isha</h1>
+
+<form method="post" th:action="@{/bill}" th:object="${bill}">
+    <label>Order No:</label>
+    <input type="text" th:field="*{orderNo}" required><br><br>
+
+    <label>Order Type:</label>
+    <select th:field="*{orderType}" required>
+        <option value="" disabled selected>Select order type</option>
+        <option value="Dine In" th:selected="${bill.orderType == 'Dine In'}">Dine In</option>
+        <option value="Delivery" th:selected="${bill.orderType == 'Delivery'}">Delivery</option>
+    </select>
+    <br><br>
+
+    <label>Customer Name:</label>
+    <input type="text" th:field="*{customerName}" required><br><br>
+
+    <label>Customer Mobile:</label>
+    <input type="number" th:field="*{customerMobile}" required><br><br>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Item Name</th>
+                <th>Weight</th>
+                <th>Unit</th>
+                <th>Quantity</th>
+                <th>Rate</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="items-body">
+            <tr th:each="item, iterStat : *{items}">
+                <td><input type="text" th:field="*{items[__${iterStat.index}__].name}" required></td>
+
+                <td>
+                    <input type="number" step="0.01" min="0" th:field="*{items[__${iterStat.index}__].weight}">
+                </td>
+
+                <td>
+                    <select th:field="*{items[__${iterStat.index}__].weightUnit}">
+                        <option value="kg" th:selected="${item.weightUnit == 'kg'}">kg</option>
+                        <option value="gram" th:selected="${item.weightUnit == 'gram'}">gram</option>
+                    </select>
+                </td>
+
+                <td><input type="number" min="1" th:field="*{items[__${iterStat.index}__].quantity}" required></td>
+
+                <td><input type="number" step="0.01" min="0" th:field="*{items[__${iterStat.index}__].rate}" required></td>
+
+                <td><button type="button" class="remove-btn" onclick="removeItemRow(this)">Remove</button></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <button type="button" class="add-btn" onclick="addItemRow()">Add Item</button><br><br>
+
+    <button type="submit">Generate Bill</button>
+</form>
+
+<script>
+    function addItemRow() {
+        const tableBody = document.getElementById('items-body');
+        const rowCount = tableBody.children.length;
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td><input type="text" name="items[${rowCount}].name" required></td>
+            <td><input type="number" step="0.01" min="0" name="items[${rowCount}].weight"></td>
+            <td>
+                <select name="items[${rowCount}].weightUnit">
+                    <option value="kg">kg</option>
+                    <option value="gram">gram</option>
+                </select>
+            </td>
+            <td><input type="number" min="1" name="items[${rowCount}].quantity" required></td>
+            <td><input type="number" step="0.01" min="0" name="items[${rowCount}].rate" required></td>
+            <td><button type="button" class="remove-btn" onclick="removeItemRow(this)">Remove</button></td>
+        `;
+        tableBody.appendChild(row);
+    }
+
+    function removeItemRow(button) {
+        const row = button.closest('tr');
+        row.remove();
+
+        // Re-index input/select names to keep Spring binding working correctly
+        const tableBody = document.getElementById('items-body');
+        Array.from(tableBody.children).forEach((tr, index) => {
+            tr.querySelectorAll('input, select').forEach(input => {
+                input.name = input.name.replace(/items\[\d+\]/, `items[${index}]`);
+            });
+        });
+    }
+</script>
+
+</body>
+</html>
