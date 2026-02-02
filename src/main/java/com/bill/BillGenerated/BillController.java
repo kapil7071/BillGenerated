@@ -26,14 +26,14 @@ public class BillController {
 	@Autowired
 	private BillService billService;
 
-    @GetMapping("/bill")
+    @GetMapping("/BillGenerated")
     public String showBillForm(Model model) {
         Bill bill = billService.showBillFormService();
         model.addAttribute("bill", bill);
         return "bill_form";
     }
 
-    @PostMapping("/bill")
+    @PostMapping("/BillGenerated")
     public String processBill(@ModelAttribute Bill bill, Model model) throws Exception {
         bill.setDateTime(LocalDateTime.now());
 
@@ -73,7 +73,7 @@ public class BillController {
         return "bill_result";
     }
 
-    @PostMapping("/bill/download")
+    @PostMapping("/BillGenerated/download")
     public ResponseEntity<ByteArrayResource> generateBillPdf(@ModelAttribute Bill bill) {
         // Calculate totals and set date if missing
         if (bill.getDateTime() == null) {
@@ -96,7 +96,7 @@ public class BillController {
     }
 
 
-    @PostMapping("/bill/downloadImage")
+    @PostMapping("/BillGenerated/downloadImage")
     public ResponseEntity<ByteArrayResource> downloadBillImageDirect(@ModelAttribute Bill bill) {
         // Ensure totals and date are set before image generation
         bill = billService.processBillService(bill);
