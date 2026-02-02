@@ -5,8 +5,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 	
-public class BillGeneratedApplication {
+public class BillGeneratedApplication extends SpringBootServletInitializer {
 
+	@Override
+  protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
+    return builder.sources(BillGeneratedApplication.class);
+  }
 	public static void main(String[] args) {
 		SpringApplication.run(BillGeneratedApplication.class, args);
 	}
