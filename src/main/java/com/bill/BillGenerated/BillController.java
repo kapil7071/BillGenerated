@@ -5,30 +5,25 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Base64;
 
-
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import com.bill.BillGenerated.Service.BillService;
 
 @Controller
 @RequestMapping("/")
-
 public class BillController {
-	
-	@Autowired
-	private BillService billService;
 
+    @Autowired
+    private BillService billService;
+
+    // ✅ Works:
+    // http://localhost:8086/BillGenerated/
     @GetMapping({"", "/"})
     public String showBillForm(Model model) {
         Bill bill = billService.showBillFormService();
@@ -36,8 +31,29 @@ public class BillController {
         return "bill_form";
     }
 
+    // ✅ Also works:
+    // http://localhost:8086/BillGenerated/bill
+    @GetMapping("/bill")
+    public String showBillFormOnBill(Model model) {
+        return showBillForm(model);
+    }
+
+    // ✅ Form POST from "/" goes here
     @PostMapping({"", "/"})
-    public String processBill(@ModelAttribute Bill bill, Model model) throws Exception {
+    public String processBillRoot(@ModelAttribute Bill bill, Model model) throws Exception {
+        return processBillCommon(bill, model);
+    }
+
+    // ✅ Form POST from "/bill" goes here
+    @PostMapping("/bill")
+    public String processBillOnBill(@ModelAttribute Bill bill, Model model) throws Exception {
+        return processBillCommon(bill, model);
+    }
+
+    // =========================
+    // Shared processing logic
+    // =========================
+    private String processBillCommon(Bill bill, Model model) throws Exception {
         bill.setDateTime(LocalDateTime.now());
 
         int totalItems = 0;
@@ -54,36 +70,39 @@ public class BillController {
             bill.setItems(new ArrayList<>());
         }
 
+        // logo
         ClassPathResource logoResource = new ClassPathResource("static/inline.png");
         byte[] logoBytes;
         try (InputStream is = logoResource.getInputStream()) {
             logoBytes = is.readAllBytes();
         }
-        String base64 = Base64.getEncoder().encodeToString(logoBytes);
-        model.addAttribute("logoBase64", base64);
+        model.addAttribute("logoBase64", Base64.getEncoder().encodeToString(logoBytes));
 
+        // QR
         ClassPathResource qrResource = new ClassPathResource("static/bakebliss_with_isha_qr.png");
         byte[] qrBytes;
         try (InputStream is2 = qrResource.getInputStream()) {
             qrBytes = is2.readAllBytes();
         }
-        String base642 = Base64.getEncoder().encodeToString(qrBytes);
-        model.addAttribute("instagramQrBase64", base642);
+        model.addAttribute("instagramQrBase64", Base64.getEncoder().encodeToString(qrBytes));
 
         bill.setTotalItems(totalItems);
         bill.setGrandTotal(grandTotal);
         model.addAttribute("bill", bill);
+
         return "bill_result";
     }
 
+    // ✅ POST: /BillGenerated/download
     @PostMapping("/download")
     public ResponseEntity<ByteArrayResource> generateBillPdf(@ModelAttribute Bill bill) {
-        // Calculate totals and set date if missing
         if (bill.getDateTime() == null) {
             bill.setDateTime(LocalDateTime.now());
         }
+
         int totalItems = 0;
         double grandTotal = 0;
+
         if (bill.getItems() != null) {
             for (Item item : bill.getItems()) {
                 if (item.getQuantity() != null && item.getRate() != null) {
@@ -92,16 +111,16 @@ public class BillController {
                 }
             }
         }
+
         bill.setTotalItems(totalItems);
-        bill.setGrandTotal((int)grandTotal);
+        bill.setGrandTotal((int) grandTotal);
 
         return billService.generateBillPdf(bill);
     }
 
-
+    // ✅ POST: /BillGenerated/downloadImage
     @PostMapping("/downloadImage")
     public ResponseEntity<ByteArrayResource> downloadBillImageDirect(@ModelAttribute Bill bill) {
-        // Ensure totals and date are set before image generation
         bill = billService.processBillService(bill);
         return billService.downloadBillImage(bill);
     }
