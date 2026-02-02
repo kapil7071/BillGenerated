@@ -21,19 +21,20 @@ import org.springframework.web.bind.annotation.PostMapping;
 import com.bill.BillGenerated.Service.BillService;
 
 @Controller
+
 public class BillController {
 	
 	@Autowired
 	private BillService billService;
 
-    @GetMapping("/BillGenerated")
+    @GetMapping({"", "/"})
     public String showBillForm(Model model) {
         Bill bill = billService.showBillFormService();
         model.addAttribute("bill", bill);
         return "bill_form";
     }
 
-    @PostMapping("/BillGenerated")
+    @PostMapping({"", "/"})
     public String processBill(@ModelAttribute Bill bill, Model model) throws Exception {
         bill.setDateTime(LocalDateTime.now());
 
@@ -73,7 +74,7 @@ public class BillController {
         return "bill_result";
     }
 
-    @PostMapping("/BillGenerated/download")
+    @PostMapping("/download")
     public ResponseEntity<ByteArrayResource> generateBillPdf(@ModelAttribute Bill bill) {
         // Calculate totals and set date if missing
         if (bill.getDateTime() == null) {
@@ -96,7 +97,7 @@ public class BillController {
     }
 
 
-    @PostMapping("/BillGenerated/downloadImage")
+    @PostMapping("/downloadImage")
     public ResponseEntity<ByteArrayResource> downloadBillImageDirect(@ModelAttribute Bill bill) {
         // Ensure totals and date are set before image generation
         bill = billService.processBillService(bill);
