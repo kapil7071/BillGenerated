@@ -153,7 +153,7 @@
 <body>
 
   <div class="button-group">
-    <form action="/bill/download" method="post" th:object="${bill}" style="display:inline-block;">
+<form th:action="@{/download}" method="post" th:object="${bill}" style="display:inline-block;">
       <input type="hidden" name="orderNo" th:value="${bill.orderNo}" />
       <input type="hidden" name="orderType" th:value="${bill.orderType}" />
       <input type="hidden" name="customerName" th:value="${bill.customerName}" />
@@ -171,7 +171,7 @@
       <button type="submit">Download Bill (PDF)</button>
     </form>
 
-    <form action="/downloadImage" method="post" th:object="${bill}" style="display:inline-block;">
+<form th:action="@{/downloadImage}" method="post" th:object="${bill}" style="display:inline-block;">
       <input type="hidden" name="orderNo" th:value="${bill.orderNo}" />
       <input type="hidden" name="orderType" th:value="${bill.orderType}" />
       <input type="hidden" name="customerName" th:value="${bill.customerName}" />
