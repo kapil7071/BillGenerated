@@ -171,7 +171,7 @@
       <button type="submit">Download Bill (PDF)</button>
     </form>
 
-    <form action="/bill/downloadImage" method="post" th:object="${bill}" style="display:inline-block;">
+    <form action="/downloadImage" method="post" th:object="${bill}" style="display:inline-block;">
       <input type="hidden" name="orderNo" th:value="${bill.orderNo}" />
       <input type="hidden" name="orderType" th:value="${bill.orderType}" />
       <input type="hidden" name="customerName" th:value="${bill.customerName}" />
